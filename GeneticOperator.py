@@ -7,7 +7,6 @@ class Chromosome:
 	def __init__(self):
 		self.bits = []
 		self.fitness = 0
-		self.fitratio = 0
 		
 	def evalFitness(self,expression,vars):
 		bit_str = ""
@@ -146,6 +145,7 @@ while continue_prog == "y" or continue_prog == "yes"
 	while True:
 		#Evaluate fitness of each member of P(t)
 		for x in range(0,len(population)):
+			population[x].evalFitness(expr,var_list)
 			if evaluateChromosomeFitness(population[x],disjuncts,var_list):
 				solved = True
 				break
