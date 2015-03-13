@@ -33,10 +33,15 @@ class Chromosome:
 							bit_str += "1"
 						else:
 							bit_str += "0"
+						#print "Not_str = %s" %bit_str 
+						if i == len(expression)-1:
+							result = eval(bit_str)
+							if result > 0:
+								self.fitness += 1
 						activeNot = False
 					else:
 						bit_str += str(self.bits[vars.index(x)])
-						print "bit_str = %s" %str(self.bits[vars.index(x)])
+						#print "bit_str = %s" %str(self.bits[vars.index(x)])
 						if i == len(expression)-1:
 							result = eval(bit_str)
 							if result > 0:
@@ -44,7 +49,7 @@ class Chromosome:
 						
 	def setBits(self,numVars):
 		for x in range(0,numVars):
-			self.bits.append(random.randint(0,1))
+			self.bits.append(int(bin(random.randint(1,50))[-1:]))
 
 	def mutate(self):
 		index = random.randint(0,len(self.bits)-1)
@@ -56,30 +61,29 @@ class Chromosome:
 #----End Class
 
 #Create new children
-def geneticOperations(numVars,c1,c2):
-	#while max <= 25, keep doing crossovers
-	min = 0
-	max = random.randint(1,numVars)
-	child1 = c1
-	child2 = c2
-	child1.fitness = 0
-	child2.fitness = 0
-	while max <= numVars:
-		part1 = c1.bits[min:max]
-		part2 = c2.bits[min:max]
-		child1.bits[min:max] = part2
-		child2.bits[min:max] = part1
-		min = max+1
-		if min >= max:
-			break
-		max = random.randint(min,numVars)
-		
+def geneticOperations(numVars,c1,c2,crosses):
+	child1 = Chromosome()
+	child1.bits = c1.bits
+	child2 = Chromosome()
+	child2.bits = c2.bits
+	#Do single crossover
+	cpoint = random.randint(0,numVars-1)
+	portion = child1.bits[cpoint:numVars]
+	child1.bits[cpoint:numVars] = child2.bits[cpoint:numVars]
+	child2.bits[cpoint:numVars] = portion
+	
 	mutate = random.randint(0,1)
-	if mutate == 1:
-		child1.mutate()
-	mutate = random.randint(0,1)
-	if mutate == 1:
-		child2.mutate()
+	""""if mutate == 1:
+		mutate = random.randint(0,1)
+		if mutate==0:
+			child1.mutate()
+		else:
+			child2.mutate()"""
+	if child1.bits == child2.bits:
+		if mutate == 0:
+			child1.mutate()
+		else:
+			child2.mutate()
 	return [child1,child2]
 		
 def evaluateChromosomeFitness(c,d,vars):
@@ -144,7 +148,7 @@ while continue_prog.lower() == "y" or continue_prog == "yes":
 		elif x == "*":
 			disjuncts += 1
 	numVars = len(var_list)
-	#print "Disjuncts = %d" %disjuncts
+	cross_pts = int(math.log(numVars,2))
 	var_list.sort()
 	#Generate initial population (create random bits for each variable)
 	population = []
@@ -182,12 +186,12 @@ while continue_prog.lower() == "y" or continue_prog == "yes":
 			indexes.append(list[0])
 			indexes.append(list[1])
 			#Perform genetic operations 
-			newpopulation = geneticOperations(numVars,population[indexes[0]],population[indexes[1]])
+			newpopulation = geneticOperations(numVars,population[indexes[0]],population[indexes[1]],cross_pts)
 		if popsize == 4:
 			list = getRandomNumbers(ranges)
 			indexes.append(list[0])
 			indexes.append(list[1])
-			additionalpop = geneticOperations(numVars,population[indexes[2]],population[indexes[3]])
+			additionalpop = geneticOperations(numVars,population[indexes[2]],population[indexes[3]],cross_pts)
 			newpopulation.append(additionalpop[0])
 			newpopulation.append(additionalpop[1])
 		#Replace old population with new population
