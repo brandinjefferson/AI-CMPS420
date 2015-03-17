@@ -1,14 +1,33 @@
+"""
+Author: Brandin Jefferson (bej0843)
+Class: Artificial Intelligence (CMPS420)
+Description: Finds the solution to a conjunctive normal form expression
+	using a genetic algorithm.
+Input: A conjunctive normal form expression composed of single letter variables.
+Output: A list of values corresponding to each variable such that the given 
+	expression evaluates to true. 
+Language: Python 2.7.9
+"""
+
 import random
 import string
 import math
 
 alphabet = string.letters
 
+"""
+Represents a single Chromosome.
+"""
 class Chromosome:
+	#*Initializes the chromosome
 	def __init__(self):
 		self.bits = []
 		self.fitness = 0
-		
+	
+	#*Finds the fitness of the chromosome using the number of disjuncts as a heuristic.
+	#expression - the actual string expression
+	#vars - a list of all individual variables in the expression
+	#		in alphabetical order
 	def evalFitness(self,expression,vars):
 		bit_str = ""
 		activeNot = False
@@ -46,54 +65,65 @@ class Chromosome:
 							result = eval(bit_str)
 							if result > 0:
 								self.fitness += 1
-						
+	
+	#*Creates a random assortment of bits for the chromosome
+	#numVars - the number of variables in the expression
 	def setBits(self,numVars):
-		for x in range(0,numVars):
-			self.bits.append(int(bin(random.randint(1,50))[-1:]))
-
-	def mutate(self):
-		index = random.randint(0,len(self.bits)-1)
-		if self.bits[index] == 0:
-			self.bits[index] = 1
-		else:
-			self.bits[index] = 0
+		self.bits = [random.randint(0,1) for i in range(0,numVars)]
+		"""for x in range(0,numVars):
+			#self.bits.append(int(bin(random.randint(1,50))[-1:]))
+			num = random.randint(0,99)
+			if num % 2 == 0:
+				self.bits.append(0)
+			else:
+				self.bits.append(1)"""
 			
 #----End Class
 
-#Create new children
-def geneticOperations(numVars,c1,c2,crosses):
+
+#*Perform a single crossover to generate two new children.
+#*If the children are the same, a mutation is performed on one.
+#*Otherwise, mutation is random.
+#numVars - the number of variables in the expression
+#c1, c2 - the chosen chromosomes to make offspring from
+def geneticOperations(numVars,c1,c2):
 	child1 = Chromosome()
-	child1.bits = c1.bits
+	child1.bits = [b for i,b in enumerate(c1.bits)]
 	child2 = Chromosome()
-	child2.bits = c2.bits
+	child2.bits = [b for i,b in enumerate(c2.bits)]
 	#Do single crossover
-	cpoint = random.randint(0,numVars-1)
+	cpoint = random.randint(0,numVars-2)
 	portion = child1.bits[cpoint:numVars]
-	child1.bits[cpoint:numVars] = child2.bits[cpoint:numVars]
+	portion2 = child2.bits[cpoint:numVars]
+	child1.bits[cpoint:numVars] = portion2
 	child2.bits[cpoint:numVars] = portion
 	
-	mutate = random.randint(0,1)
-	""""if mutate == 1:
-		mutate = random.randint(0,1)
-		if mutate==0:
-			child1.mutate()
+	go = random.randint(0,99)
+	if child1.bits == child2.bits or go % 2 == 1:
+		mutate = random.randint(0,numVars-1)
+		if child1.bits[mutate] == 0:
+			child1.bits[mutate] = 1
 		else:
-			child2.mutate()"""
-	if child1.bits == child2.bits:
-		if mutate == 0:
-			child1.mutate()
-		else:
-			child2.mutate()
+			child1.bits[mutate] = 0
 	return [child1,child2]
 		
+#*Compares the fitness of a chromosome to the number of disjuncts
+#*to determine if it is a solution. If the 2 are equal, then it is
+# c - a chromosome
+# d - the number of disjuncts
+# vars - the list of variables in the expression
 def evaluateChromosomeFitness(c,d,vars):
 	if c.fitness == d:
-		print "Fitness Level = %d" %c.fitness 
-		print "%s = %s" %(str(vars).strip("[]"),str(c.bits).strip("[]"))
+		#print "Fitness Level = %d" %c.fitness 
+		for i,x in enumerate(vars):
+			print "%s = %s" %(x,str(c.bits[i]))
 		return True
 	else:
 		return False
 
+#* Returns tuples containing the fitness ranges for the current		
+#* generation.
+# population - the chromosomes in the current generation
 def findFitnessRanges(population):
 	total = 0
 	tuples = []
@@ -108,6 +138,9 @@ def findFitnessRanges(population):
 		min = min+ratio+1
 	return tuples
 
+#* Chooses two random numbers between 0 and 100 to determine the
+#* chromosomes to use in crossover
+# ranges -a list of tuples representing the fitness ranges
 def getRandomNumbers(ranges):
 	r1 = random.randint(0,100)
 	r2 = random.randint(0,100)
@@ -148,7 +181,7 @@ while continue_prog.lower() == "y" or continue_prog == "yes":
 		elif x == "*":
 			disjuncts += 1
 	numVars = len(var_list)
-	cross_pts = int(math.log(numVars,2))
+	#cross_pts = int(math.log(numVars,2))
 	var_list.sort()
 	#Generate initial population (create random bits for each variable)
 	population = []
@@ -161,7 +194,7 @@ while continue_prog.lower() == "y" or continue_prog == "yes":
 		aChrom = Chromosome()
 		aChrom.setBits(numVars)
 		population.append(aChrom)
-	print "Originals: %s, %s" %(str(population[0].bits),str(population[1].bits))
+	#print "Originals: %s, %s" %(str(population[0].bits),str(population[1].bits))
 	#Perform genetic algorithm until problem is solved
 	solved = False
 	time = 0
@@ -169,7 +202,7 @@ while continue_prog.lower() == "y" or continue_prog == "yes":
 		#Evaluate fitness of each member of P(t)
 		for x in range(0,len(population)):
 			population[x].evalFitness(expr,var_list)
-			print population[x].fitness
+			#print population[x].fitness
 			if evaluateChromosomeFitness(population[x],disjuncts,var_list):
 				solved = True
 				break
@@ -186,20 +219,17 @@ while continue_prog.lower() == "y" or continue_prog == "yes":
 			indexes.append(list[0])
 			indexes.append(list[1])
 			#Perform genetic operations 
-			newpopulation = geneticOperations(numVars,population[indexes[0]],population[indexes[1]],cross_pts)
+			newpopulation = geneticOperations(numVars,population[indexes[0]],population[indexes[1]])
 		if popsize == 4:
 			list = getRandomNumbers(ranges)
 			indexes.append(list[0])
 			indexes.append(list[1])
-			additionalpop = geneticOperations(numVars,population[indexes[2]],population[indexes[3]],cross_pts)
+			additionalpop = geneticOperations(numVars,population[indexes[2]],population[indexes[3]])
 			newpopulation.append(additionalpop[0])
 			newpopulation.append(additionalpop[1])
 		#Replace old population with new population
-		population = newpopulation
+		population = [x for i,x in enumerate(newpopulation)]
 		time += 1
-		print "time = %d" %time
-		for x in range(0,len(population)):
-			print population[x].bits
 		
 	continue_prog = raw_input("Go again (yes/no)? ")
 			
