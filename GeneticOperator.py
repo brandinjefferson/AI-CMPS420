@@ -168,7 +168,7 @@ print "* := AND"
 print "! := NOT"
 print "Example: (A+B)*(!B+C+!D)*(D+!E)"
 
-while continue_prog.lower() == "y" or continue_prog == "yes":
+while continue_prog.lower() == "y" or continue_prog.lower() == "yes":
 	expr = raw_input("Enter Expression: ")
 	#Parse string and get unique variables
 	disjuncts = 1		#The total number of disjuncts
