@@ -81,23 +81,35 @@ class Chromosome:
 #----End Class
 
 
-#*Perform a single crossover to generate two new children.
+#*Perform multi crossover to generate two new children.
 #*If the children are the same, a mutation is performed on one.
 #*Otherwise, mutation is random.
 #numVars - the number of variables in the expression
 #c1, c2 - the chosen chromosomes to make offspring from
-def geneticOperations(numVars,c1,c2):
+def geneticOperations(numVars,c1,c2,cross_pts):
 	child1 = Chromosome()
 	child1.bits = [b for i,b in enumerate(c1.bits)]
 	child2 = Chromosome()
 	child2.bits = [b for i,b in enumerate(c2.bits)]
 	#Do single crossover
-	cpoint = random.randint(0,numVars-2)
+	"""cpoint = random.randint(0,numVars-2)
 	portion = child1.bits[cpoint:numVars]
 	portion2 = child2.bits[cpoint:numVars]
 	child1.bits[cpoint:numVars] = portion2
-	child2.bits[cpoint:numVars] = portion
-	
+	child2.bits[cpoint:numVars] = portion"""
+	#Do multi crossover
+	min = 0
+	max = 0
+	interval = numVars/cross_pts
+	for i in range(0,cross_pts):
+		max += interval
+		cpoint1 = random.randint(min,max-2)
+		cpoint2 = random.randint(cpoint1+1,max-1)
+		portion = c1.bits[cpoint1:cpoint2]
+		c1.bits[cpoint1:cpoint2] = c2.bits[cpoint1:cpoint2]
+		c2.bits[cpoint1:cpoint2] = portion
+		min = max
+		
 	go = random.randint(0,99)
 	if child1.bits == child2.bits or go % 2 == 1:
 		mutate = random.randint(0,numVars-1)
@@ -181,7 +193,7 @@ while continue_prog.lower() == "y" or continue_prog.lower() == "yes":
 		elif x == "*":
 			disjuncts += 1
 	numVars = len(var_list)
-	#cross_pts = int(math.log(numVars,2))
+	cross_pts = int(math.ceil(float(numVars)/8.0))
 	var_list.sort()
 	#Generate initial population (create random bits for each variable)
 	population = []
@@ -219,12 +231,12 @@ while continue_prog.lower() == "y" or continue_prog.lower() == "yes":
 			indexes.append(list[0])
 			indexes.append(list[1])
 			#Perform genetic operations 
-			newpopulation = geneticOperations(numVars,population[indexes[0]],population[indexes[1]])
+			newpopulation = geneticOperations(numVars,population[indexes[0]],population[indexes[1]],cross_pts)
 		if popsize == 4:
 			list = getRandomNumbers(ranges)
 			indexes.append(list[0])
 			indexes.append(list[1])
-			additionalpop = geneticOperations(numVars,population[indexes[2]],population[indexes[3]])
+			additionalpop = geneticOperations(numVars,population[indexes[2]],population[indexes[3]],cross_pts)
 			newpopulation.append(additionalpop[0])
 			newpopulation.append(additionalpop[1])
 		#Replace old population with new population
