@@ -1,0 +1,40 @@
+World Building
+worldsize(N).
+stench(X,Y).
+breeze(X,Y).
+glitter(X,Y).
+
+wumpus(X,Y) :- write(X), write(' and '), write(Y) .
+wumpus(X,Y,N) :- N>0, (X < N; X = N), (Y <N; Y=N), \+wumpus(X,Y),
+assert(stench(X+1,Y)),assert(stench(X-1,Y)),assert(stench(X,Y+1)),assert(stench(X,Y-1)).
+
+pit(X,Y).
+pit(X,Y,N) :- N>0, X < N; X = N, Y <N; Y=N, \+pit(X,Y), assert(pit(X,Y)),
+assert(breeze(X+1,Y)),assert(breeze(X-1,Y)),assert(breeze(X,Y+1)),assert(breeze(X,Y-1)).
+
+gold(X,Y).
+gold(X,Y,N) :- N>0, X < N; X = N, Y <N; Y=N, \+gold(X,Y), assert(gold(X,Y)),assert(glitter(X,Y)).
+
+Character Movement
+charposition(X,Y,D)
+
+Prolog moves from the top to the bottom.
+It is heavily recursive.
+Can use 'trace' to follow what it does. Just continue pressing enter.
+
+Look up how to save new predicates to top level at run time.
+
+%Can do checks when reaching a certain 
+world(Size,WumpusX/WumpusY,[PitX/PitY|Other_Pits],[GoldX/GoldY|Other_Gold],Path) :-
+Size > 0, .
+
+createstenches(WumpusX/WumpusY,X/Y) :- 
+    A is WumpusX+1, B is WumpusX-1, C is WumpusY+1, D is WumpusY-1,
+    member(X/Y,[A/WumpusY,B/WumpusY,WumpusX/C,WumpusX/D]).
+	
+createbreezes([PitX/PitY|Other_Pits],X/Y) :-
+    createbreezes(Other_Pits,X/Y), 
+    A is PitX+1, B is PitX-1, C is PitY+1, D is PitY-1,
+    member(X/Y,[A/PitY,B/PitY,PitX/C,PitX/D]).
+createbreezes([],_/_).
+	
