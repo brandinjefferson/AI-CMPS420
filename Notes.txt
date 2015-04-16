@@ -1,0 +1,42 @@
+Write a description of a world and movements, then translate it into prolog.
+
+The world is a 9x9 square grid. A wumpus is located at the square (3,4). Pits are
+located at squares (5,6), (2,2), and (7,8). Gold is located at squares (3,3), (9,8). 
+
+The agent climbs down into grid (1,1) facing 0 degrees (east) with 2 arrows at his disposal.
+-
+The agent turns left or right (+/- 90 degrees) or moves forward or shoots an arrow in the
+direction he's facing.
+If the agent reaches a block with a stench or breeze, then he is aware of that thing being nearby.
+ He will shoot in one direction. If the wumpus is on that row/column, it will scream and die.
+ Otherwise it will thunk against the wall.
+If the agent reaches a room with a pit or the wumpus.
+ He dies. End simulation.
+If the agent finds a room that glitters:
+ He picks up the gold. 
+ If there are more gold, repeat at line 7.
+ Else, he needs to go back to cell (1,1).
+  Climb out and he's done.
+ 
+subset([],[]).
+subset([X|L],[X|S]) :- subset(L,S).
+subset(L, [_|S]) :- subset(L,S).
+			
+move(1,5). 
+move(1,8). 
+move(2, 7). 
+move(2, 9).
+move(3, 4). 
+move(3, 8). 
+move(4, 3). 
+move(4,9).
+move(5, 7). 
+move(5,1). 
+move(7, 5). 
+move(7, 2).
+move(8, 3). 
+move(8, 1). 
+move(9, 4). 
+move(9, 2).
+path(Z, Z). 
+path(X, Y) :- move(X, W), not(been(W)), assert(been(W)), path(W, V).
