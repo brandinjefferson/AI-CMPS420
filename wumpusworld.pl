@@ -57,7 +57,7 @@ plan(World,Cur_State,Goal,Knowledge,Safe,Not_Safe,Been) :-
 				add_to_safe(Cur_State,Safe,New_Safe)),
 			\+ dead(World,Cur_State),
 			glitter(Cur_State,New_Gold),
-            move(World,Cur_State,Action),
+            move(World,Cur_State,Actions,Safe),
 			append(Been,[been(X/Y)],New_Been),
 			plan(World,)
 
@@ -65,13 +65,14 @@ plan(World,Cur_State,Goal,Knowledge,Safe,Not_Safe,Been) :-
 %Need movement for firing arrow.
 
 %Move forward if Z is in bounds and the next square is safe.
-move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(east),_],[arrows(A),position(Z/Y),facing(east)],_) :-
+move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(east)],
+		[arrows(A),remove(position(X/Y)),add(position(Z/Y)),facing(east)],Safe) :-
    Z is X+1, Z =< Size, Z >= 0,safe(Z/Y).
-move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(west),_],[arrows(A),position(Z/Y),facing(west)],_) :-
+move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(west),_],[arrows(A),position(Z/Y),facing(west)],Safe) :-
    Z is X-1, Z =< Size, Z >= 0,safe(Z/Y).
-move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(north),_],[arrows(A),position(X/Z),facing(north)],_) :-
+move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(north),_],[arrows(A),position(X/Z),facing(north)],Safe) :-
    Z is Y+1, Z =< Size, Z >= 0,safe(X/Z).
-move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(south),_],[arrows(A),position(X/Z),facing(south)],_) :-
+move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(south),_],[arrows(A),position(X/Z),facing(south)],Safe) :-
    Z is Y-1, Z =< Size, Z >= 0,safe(X/Z).
 %Turn 90 degrees in some direction. 
 move([Size,Gold,Pits,WumpusX/WumpusY],[arrows(A),position(X/Y),facing(east),_],[arrows(A),position(X/Y),facing(south)],_).
